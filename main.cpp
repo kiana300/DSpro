@@ -96,13 +96,33 @@ public:
         TreeNode* Node1 = findNode(hperson1);
         TreeNode* Node2 = findNode(hperson2);
         if (Node1 == NULL || Node2 == NULL) {
-            cout << "not found";  
+            cout << "not found"<< endl;  
         }
         if(Node1->parent == Node2->parent){
-            cout <<"they are siblings";
+            cout <<"they are siblings" << endl;
         }
         else{
-            cout << "they aren't siblings";
+            cout << "they aren't siblings" <<endl;
+        }
+    }
+    void Ancestor(string ancestor,string child) {
+        bool check = false;
+        string hancestor = sha256(ancestor);
+        string hchild = sha256(child);
+        TreeNode* ancestorNode = findNode(hancestor);
+        TreeNode* childNode = findNode(hchild);
+        if (ancestorNode == NULL || childNode == NULL) {
+            cout << "not found" << endl; 
+        }
+        while (childNode != NULL) {
+            if (childNode == ancestorNode) {
+                check = true;
+                cout << ancestor << " is the ancestor of " << "child"<< endl;
+            }
+            childNode = childNode -> parent; 
+        }
+        if(!check){
+            cout << ancestor << " isn't the ancestor of " << child << endl;
         }
     }
 };
@@ -117,5 +137,6 @@ int main(){
     familyTree.addChild("zahra", "Child1");
     familyTree.addChild("zahra", "yasy");
     familyTree.addChild("milad", "mina");
-    familyTree.sibling("Child1","ola");
+    familyTree.sibling("Child1","yasy");
+    familyTree.Ancestor("Grandparent","yasy");
 }
