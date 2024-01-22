@@ -4,10 +4,11 @@
 #include <algorithm>
 class TreeNode{
 public:
-    int hValue;
+    string hValue;
     TreeNode* leftChild;
     TreeNode* rightChild;
-    TreeNode(int Value){
+    TreeNode* parent;
+    TreeNode(string Value , TreeNode* parentNode = NULL){
         hValue = Value;
         leftChild = NULL;
         rightChild = NULL;
@@ -20,7 +21,7 @@ private:
 public:
     Genealogy(){}
     //find Node
-    TreeNode* findNode(int Value) {
+    TreeNode* findNode(string Value) {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes[i]->hValue == Value) {
                 return nodes[i];
@@ -31,19 +32,20 @@ public:
     // add a root
     void add(string name) {
         string hValue = sha256(name);
-        TreeNode* newNode = new TreeNode(stoi(hValue));
+        TreeNode* newNode = new TreeNode(hValue);
         nodes.push_back(newNode);
     }
     // add a child 
-    void addChild(string parent,string child) {
+    void addChild(string parent, string child) {
         string pHash = sha256(parent);
         string cHash = sha256(child);
-        TreeNode* parentNode = findNode(stoi(pHash));
+        TreeNode* parentNode = findNode(pHash);
         if (parentNode != NULL) {
-            TreeNode* childNode = new TreeNode(stoi(cHash));
+            TreeNode* childNode = new TreeNode(cHash);
+            childNode->parent = parentNode;
             if (parentNode->leftChild == NULL) {
                 parentNode->leftChild = childNode;
-            } 
+            }
             else {
                 parentNode->rightChild = childNode;
             }
@@ -56,9 +58,9 @@ public:
     }
     void Find(string name){
         bool found = false;
-        string hValue = sha256(name);
+        string Value = sha256(name);
         for (int i = 0; i < nodes.size(); i++) {
-            if (nodes[i] -> hValue == stoi(hValue)) {
+            if (nodes[i] -> hValue == Value) {
                 cout << "yes";
                 found = true;
                 break;
@@ -81,17 +83,27 @@ public:
     }
     void Delete(string name){
         string hValue = sha256(name);
-        TreeNode* p = findNode(stoi(hValue));
+        TreeNode* p = findNode(hValue);
         if (p != NULL) {
             deleteRecursive(p);
         }
 
         cout << nodes.size();
     }
-    void sibling(string n1,string n2){
-        string hn1 = sha256(n1);
-        string hn2 = sha256(n2);
-        
+    void sibling(string person1,string person2){
+        string hperson1 = sha256(person1);
+        string hperson2 = sha256(person2);
+        TreeNode* Node1 = findNode(hperson1);
+        TreeNode* Node2 = findNode(hperson2);
+        if (Node1 == NULL || Node2 == NULL) {
+            cout << "not found";  
+        }
+        if(Node1->parent == Node2->parent){
+            cout <<"they are siblings";
+        }
+        else{
+            cout << "they aren't siblings";
+        }
     }
 };
 
@@ -100,10 +112,10 @@ int main(){
 
     familyTree.add("Grandparent");
 
-    familyTree.addChild("Grandparent", "Parent1");
-    familyTree.addChild("Grandparent", "Parent2");
-    familyTree.addChild("Parent1", "Child1");
-    familyTree.addChild("Parent1", "Child2");
-    familyTree.Size();
-    familyTree.Delete("Parent2");
+    familyTree.addChild("Grandparent", "zahra");
+    familyTree.addChild("Grandparent", "milad");
+    familyTree.addChild("zahra", "Child1");
+    familyTree.addChild("zahra", "yasy");
+    familyTree.addChild("milad", "mina");
+    familyTree.sibling("Child1","ola");
 }
