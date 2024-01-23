@@ -90,7 +90,71 @@ public:
 
         cout << nodes.size();
     }
-    void sibling(string person1,string person2){
+    //B
+    bool sibling(string person1,string person2){
+        string hperson1 = sha256(person1);
+        string hperson2 = sha256(person2);
+        TreeNode* Node1 = findNode(hperson1);
+        TreeNode* Node2 = findNode(hperson2);
+        if (Node1 == NULL || Node2 == NULL) {
+            return false;  
+        }
+        if(Node1->parent == Node2->parent){
+            cout <<"they are siblings" << endl;
+            return true;
+        }
+        return false;
+    }
+    //A
+    bool Ancestor(string ancestor,string child) {
+        string hancestor = sha256(ancestor);
+        string hchild = sha256(child);
+        TreeNode* ancestorNode = findNode(hancestor);
+        TreeNode* childNode = findNode(hchild);
+        if (ancestorNode == NULL || childNode == NULL) {
+            return false;
+        }
+        while (childNode != NULL) {
+            if (childNode == ancestorNode) {
+                return true;
+            }
+            childNode = childNode -> parent; 
+        }
+        return false;
+    }
+    //C
+    bool cousin(string person1,string person2){
+        string hperson1 = sha256(person1);
+        string hperson2 = sha256(person2);
+        TreeNode* Node1 = findNode(hperson1);
+        TreeNode* Node2 = findNode(hperson2);
+        if (Node1 == NULL || Node2 == NULL) {
+            return false;  
+        }
+        if (Ancestor(person1, person2) || Ancestor(person2, person1) || sibling(person1,person2)) {
+            return false; 
+        }
+        vector<string> a, b;
+        while (Node1 != NULL) {
+            a.push_back(Node1->hValue);
+            Node1 = Node1->parent;
+        }
+        while (Node2 != NULL) {
+            b.push_back(Node2->hValue);
+            Node2 = Node2->parent;
+        }
+        for (int i = 0;i < a.size();i++) {
+            for (int j = 0;j < b.size();j++) {
+                if (a[i] == b[j]) {
+                    return true; 
+                }
+            }
+        }
+        return false; 
+    }
+    //D
+    void commonAncestor(string person1,string person2){
+        bool check = false;
         string hperson1 = sha256(person1);
         string hperson2 = sha256(person2);
         TreeNode* Node1 = findNode(hperson1);
@@ -98,32 +162,42 @@ public:
         if (Node1 == NULL || Node2 == NULL) {
             cout << "not found"<< endl;  
         }
-        if(Node1->parent == Node2->parent){
-            cout <<"they are siblings" << endl;
+        vector<string> a, b;
+        while (Node1 != NULL) {
+            a.push_back(Node1->hValue);
+            Node1 = Node1->parent;
         }
-        else{
-            cout << "they aren't siblings" <<endl;
+        while (Node2 != NULL) {
+            b.push_back(Node2->hValue);
+            Node2 = Node2->parent;
         }
-    }
-    void Ancestor(string ancestor,string child) {
-        bool check = false;
-        string hancestor = sha256(ancestor);
-        string hchild = sha256(child);
-        TreeNode* ancestorNode = findNode(hancestor);
-        TreeNode* childNode = findNode(hchild);
-        if (ancestorNode == NULL || childNode == NULL) {
-            cout << "not found" << endl; 
-        }
-        while (childNode != NULL) {
-            if (childNode == ancestorNode) {
-                check = true;
-                cout << ancestor << " is the ancestor of " << "child"<< endl;
+        for (int i = 0;i < a.size();i++) {
+            for (int j = 0;j < b.size();j++) {
+                if (a[i] == b[j]) {
+                    cout << a[i]; 
+                    check = true;
+                }
             }
-            childNode = childNode -> parent; 
         }
         if(!check){
-            cout << ancestor << " isn't the ancestor of " << child << endl;
+            cout << "No common ancestor"; 
         }
+    }
+    int maxDepth(TreeNode* root) {
+        if (root == nullptr) {
+            return 0;
+        }
+        int leftDepth = maxDepth(root->leftChild);
+        int rightDepth = maxDepth(root->rightChild);
+        return max(leftDepth, rightDepth) + 1;
+    }
+    int findFarthestChild(string name) {
+        string hash = sha256(name);
+        TreeNode* node = findNode(hash);
+        if (node == NULL) {
+            return -1; 
+        }
+        return maxDepth(node) - 1;
     }
 };
 
@@ -137,6 +211,13 @@ int main(){
     familyTree.addChild("zahra", "Child1");
     familyTree.addChild("zahra", "yasy");
     familyTree.addChild("milad", "mina");
-    familyTree.sibling("Child1","yasy");
-    familyTree.Ancestor("Grandparent","yasy");
+    cout << familyTree.findFarthestChild("milad");
 }
+/*
+
+        grand
+    zahra    milad
+Child  yasy    mina
+
+
+*/
