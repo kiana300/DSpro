@@ -39,15 +39,15 @@ string sha256(string input) {
 
     // Append original message length in bits
     uint64_t messageLength = input.size() * 8;
-    paddedMessage += std::string(8, '\x00');
-    for (int i = 0; i < 8; ++i) {
+    paddedMessage += string(8, '\x00');
+    for (int i = 0; i < 8; i++) {
         paddedMessage[paddedMessage.size() - 8 + i] = (messageLength >> (56 - 8 * i)) & 0xFF;
     }
 
     // Process blocks
     for (int i = 0; i < paddedMessage.size(); i += 64) {
         // Break block into 16 32-bit words
-        vector<unsigned int> words(64, 0);
+        vector<int> words(64, 0);
         for (int j = 0; j < 16; ++j) {
             words[j] = (static_cast<unsigned int>(paddedMessage[i + j * 4]) << 24) |
                        (static_cast<unsigned int>(paddedMessage[i + j * 4 + 1]) << 16) |
@@ -57,25 +57,25 @@ string sha256(string input) {
 
         // Extend the first 16 words into the remaining 48 words
         for (int j = 16; j < 64; ++j) {
-            const unsigned int s0 = (words[j - 15] >> 7 | words[j - 15] << 25) ^
+            int s0 = (words[j - 15] >> 7 | words[j - 15] << 25) ^
                                     (words[j - 15] >> 18 | words[j - 15] << 14) ^ (words[j - 15] >> 3);
-            const unsigned int s1 = (words[j - 2] >> 17 | words[j - 2] << 15) ^
+            int s1 = (words[j - 2] >> 17 | words[j - 2] << 15) ^
                                     (words[j - 2] >> 19 | words[j - 2] << 13) ^ (words[j - 2] >> 10);
 
             words[j] = words[j - 16] + s0 + words[j - 7] + s1;
         }
 
         // Initialize working variables
-        unsigned int a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+        int a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
 
         // Compression function main loop
         for (int j = 0; j < 64; ++j) {
-            const unsigned int S1 = (e >> 6 | e << 26) ^ (e >> 11 | e << 21) ^ (e >> 25 | e << 7);
-            const unsigned int ch = (e & f) ^ (~e & g);
-            const unsigned int temp1 = h + S1 + ch + K[j] + words[j];
-            const unsigned int S0 = (a >> 2 | a << 30) ^ (a >> 13 | a << 19) ^ (a >> 22 | a << 10);
-            const unsigned int maj = (a & b) ^ (a & c) ^ (b & c);
-            const unsigned int temp2 = S0 + maj;
+            int S1 = (e >> 6 | e << 26) ^ (e >> 11 | e << 21) ^ (e >> 25 | e << 7);
+            int ch = (e & f) ^ (~e & g);
+            int temp1 = h + S1 + ch + K[j] + words[j];
+            int S0 = (a >> 2 | a << 30) ^ (a >> 13 | a << 19) ^ (a >> 22 | a << 10);
+            int maj = (a & b) ^ (a & c) ^ (b & c);
+            int temp2 = S0 + maj;
 
             h = g;
             g = f;

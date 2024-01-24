@@ -1,5 +1,6 @@
 #include "hash.cpp"
 #include <iostream>
+#include <cmath>
 #include <vector>
 #include <algorithm>
 class TreeNode{
@@ -18,6 +19,59 @@ public:
 class Genealogy{
 private:
     vector<TreeNode*> nodes;
+    void deleteRecursive(TreeNode* node) {
+        if (node->leftChild != nullptr) {
+            deleteRecursive(node->leftChild);
+        }
+        if (node->rightChild != nullptr) {
+            deleteRecursive(node->rightChild);
+        }
+        auto removeCondition = [node](TreeNode* otherNode) {
+        return node == otherNode;
+    };
+    nodes.erase(std::remove_if(nodes.begin(), nodes.end(), removeCondition), nodes.end());
+    delete node;
+    // Reduce memory usage
+    nodes.shrink_to_fit();
+    }
+    int maxDepth(TreeNode* root) {
+        if (root == nullptr) {
+            return 0;
+        }
+        int leftDepth = maxDepth(root->leftChild);
+        int rightDepth = maxDepth(root->rightChild);
+        return max(leftDepth, rightDepth) + 1;
+    }
+    int findDistance(TreeNode* Node1, TreeNode* Node2) {
+        if (Node1 == NULL || Node1 == NULL) {
+            return -1; 
+        }
+        TreeNode* commonAncestor = findCommonAncestor(Node1, Node2);
+        int distance1 = calculateDistance(commonAncestor, Node1);
+        int distance2 = calculateDistance(commonAncestor, Node2);
+        return distance1 + distance2;
+    }
+    TreeNode* findCommonAncestor(TreeNode* Node1, TreeNode* Node2){
+        while (Node1 != NULL) {
+            TreeNode* temp = Node2;
+            while (temp != NULL) {
+                if (Node1 == temp) {
+                    return Node1;
+                }
+                temp = temp->parent;
+            }
+            Node1 = Node1->parent;
+        }
+        return NULL; 
+    }
+    int calculateDistance(TreeNode* parent, TreeNode* child) {
+        int distance = 0;
+        while (child != parent) {
+            child = child->parent;
+            distance ++;
+        }
+        return distance;
+    }
 public:
     Genealogy(){}
     //find Node
@@ -37,11 +91,9 @@ public:
     }
     // add a child 
     void addChild(string parent, string child) {
-        string pHash = sha256(parent);
-        string cHash = sha256(child);
-        TreeNode* parentNode = findNode(pHash);
+        TreeNode* parentNode = findNode(sha256(parent));
         if (parentNode != NULL) {
-            TreeNode* childNode = new TreeNode(cHash);
+            TreeNode* childNode = new TreeNode(sha256(child));
             childNode->parent = parentNode;
             if (parentNode->leftChild == NULL) {
                 parentNode->leftChild = childNode;
@@ -70,32 +122,16 @@ public:
             cout << "no";
         }
     }
-    void deleteRecursive(TreeNode* node) {
-            if(node -> leftChild != NULL){
-                deleteRecursive(node->leftChild);
-            }
-            if(node -> rightChild != NULL){
-                deleteRecursive(node->rightChild);
-            }
-            auto it = remove(nodes.begin(), nodes.end(), node);
-            nodes.erase(it, nodes.end());
-            delete node;
-    }
     void Delete(string name){
-        string hValue = sha256(name);
-        TreeNode* p = findNode(hValue);
+        TreeNode* p = findNode(sha256(name));
         if (p != NULL) {
             deleteRecursive(p);
         }
-
-        cout << nodes.size();
     }
     //B
     bool sibling(string person1,string person2){
-        string hperson1 = sha256(person1);
-        string hperson2 = sha256(person2);
-        TreeNode* Node1 = findNode(hperson1);
-        TreeNode* Node2 = findNode(hperson2);
+        TreeNode* Node1 = findNode(sha256(person1));
+        TreeNode* Node2 = findNode(sha256(person2));
         if (Node1 == NULL || Node2 == NULL) {
             return false;  
         }
@@ -107,10 +143,8 @@ public:
     }
     //A
     bool Ancestor(string ancestor,string child) {
-        string hancestor = sha256(ancestor);
-        string hchild = sha256(child);
-        TreeNode* ancestorNode = findNode(hancestor);
-        TreeNode* childNode = findNode(hchild);
+        TreeNode* ancestorNode = findNode(sha256(ancestor));
+        TreeNode* childNode = findNode(sha256(child));
         if (ancestorNode == NULL || childNode == NULL) {
             return false;
         }
@@ -124,10 +158,8 @@ public:
     }
     //C
     bool cousin(string person1,string person2){
-        string hperson1 = sha256(person1);
-        string hperson2 = sha256(person2);
-        TreeNode* Node1 = findNode(hperson1);
-        TreeNode* Node2 = findNode(hperson2);
+        TreeNode* Node1 = findNode(sha256(person1));
+        TreeNode* Node2 = findNode(sha256(person2));
         if (Node1 == NULL || Node2 == NULL) {
             return false;  
         }
@@ -155,49 +187,47 @@ public:
     //D
     void commonAncestor(string person1,string person2){
         bool check = false;
-        string hperson1 = sha256(person1);
-        string hperson2 = sha256(person2);
-        TreeNode* Node1 = findNode(hperson1);
-        TreeNode* Node2 = findNode(hperson2);
+        TreeNode* Node1 = findNode(sha256(person1));
+        TreeNode* Node2 = findNode(sha256(person2));
         if (Node1 == NULL || Node2 == NULL) {
             cout << "not found"<< endl;  
         }
-        vector<string> a, b;
-        while (Node1 != NULL) {
-            a.push_back(Node1->hValue);
+        while (Node1 != nullptr) {
+            TreeNode* temp = Node2;
+            while (temp != NULL) {
+                if (Node1 == temp) {
+                    cout <<  Node1 -> hValue;
+                }
+                temp = temp->parent;
+            }
             Node1 = Node1->parent;
         }
-        while (Node2 != NULL) {
-            b.push_back(Node2->hValue);
-            Node2 = Node2->parent;
-        }
-        for (int i = 0;i < a.size();i++) {
-            for (int j = 0;j < b.size();j++) {
-                if (a[i] == b[j]) {
-                    cout << a[i]; 
-                    check = true;
-                }
-            }
-        }
         if(!check){
-            cout << "No common ancestor"; 
+            cout << "no common ancestor" << endl;
         }
     }
-    int maxDepth(TreeNode* root) {
-        if (root == nullptr) {
-            return 0;
-        }
-        int leftDepth = maxDepth(root->leftChild);
-        int rightDepth = maxDepth(root->rightChild);
-        return max(leftDepth, rightDepth) + 1;
-    }
+    //E
     int findFarthestChild(string name) {
-        string hash = sha256(name);
-        TreeNode* node = findNode(hash);
+        TreeNode* node = findNode(sha256(name));
         if (node == NULL) {
             return -1; 
         }
         return maxDepth(node) - 1;
+    }
+    //E
+    pair<string,string> findMostDistantRelatives() {
+        pair<string,string> result;
+        int maxDistance = 0;
+        for (int i = 0; i < nodes.size(); i++){
+            for (int j = i + 1; j < nodes.size(); j++) {
+                int distance = findDistance(nodes[i], nodes[j]);
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    result = make_pair(nodes[i]->hValue, nodes[j]->hValue);
+                }
+            }
+        }
+        return result;
     }
 };
 
@@ -211,7 +241,11 @@ int main(){
     familyTree.addChild("zahra", "Child1");
     familyTree.addChild("zahra", "yasy");
     familyTree.addChild("milad", "mina");
-    cout << familyTree.findFarthestChild("milad");
+    familyTree.addChild("milad", "mina");
+  // pair<string, string> distantRelatives = familyTree.findMostDistantRelatives();
+    familyTree.Delete("yasy");
+    familyTree.Size();
+    //cout << "Most Distant Relatives: " << distantRelatives.first << " and " << distantRelatives.second << endl;
 }
 /*
 
