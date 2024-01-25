@@ -26,13 +26,10 @@ private:
         if (node->rightChild != nullptr) {
             deleteRecursive(node->rightChild);
         }
-        auto removeCondition = [node](TreeNode* otherNode) {
-        return node == otherNode;
-    };
-    nodes.erase(std::remove_if(nodes.begin(), nodes.end(), removeCondition), nodes.end());
-    delete node;
-    // Reduce memory usage
-    nodes.shrink_to_fit();
+        auto it = find(nodes.begin(), nodes.end(),node);
+        if (it != nodes.end()) {
+            nodes.erase(it);
+        }
     }
     int maxDepth(TreeNode* root) {
         if (root == nullptr) {
@@ -71,10 +68,7 @@ private:
             distance ++;
         }
         return distance;
-    }
-public:
-    Genealogy(){}
-    //find Node
+    } 
     TreeNode* findNode(string Value) {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes[i]->hValue == Value) {
@@ -83,6 +77,8 @@ public:
         }
         return NULL; 
     }
+public:
+    Genealogy(){}
     // add a root
     void add(string name) {
         string hValue = sha256(name);
@@ -106,22 +102,24 @@ public:
     }
     // size
     void Size(){
-        cout << nodes.size() ;
+        cout << nodes.size() << endl;
     }
+    // find Node
     void Find(string name){
         bool found = false;
         string Value = sha256(name);
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes[i] -> hValue == Value) {
-                cout << "yes";
+                cout << "yes" << endl;
                 found = true;
                 break;
             }
         }
         if(!found){
-            cout << "no";
+            cout << "not found" << endl;
         }
     }
+    //Delete Node
     void Delete(string name){
         TreeNode* p = findNode(sha256(name));
         if (p != NULL) {
@@ -136,7 +134,6 @@ public:
             return false;  
         }
         if(Node1->parent == Node2->parent){
-            cout <<"they are siblings" << endl;
             return true;
         }
         return false;
@@ -157,7 +154,7 @@ public:
         return false;
     }
     //C
-    bool cousin(string person1,string person2){
+    bool distantfamily(string person1,string person2){
         TreeNode* Node1 = findNode(sha256(person1));
         TreeNode* Node2 = findNode(sha256(person2));
         if (Node1 == NULL || Node2 == NULL) {
@@ -196,7 +193,8 @@ public:
             TreeNode* temp = Node2;
             while (temp != NULL) {
                 if (Node1 == temp) {
-                    cout <<  Node1 -> hValue;
+                    cout <<  Node1 -> hValue << endl;
+                    check = true;
                 }
                 temp = temp->parent;
             }
@@ -206,7 +204,7 @@ public:
             cout << "no common ancestor" << endl;
         }
     }
-    //E
+    //F
     int findFarthestChild(string name) {
         TreeNode* node = findNode(sha256(name));
         if (node == NULL) {
@@ -232,26 +230,115 @@ public:
 };
 
 int main(){
-   Genealogy familyTree;
+    Genealogy familyTree;
+    int input;
 
-    familyTree.add("Grandparent");
+    cout << "enter 1 for add a root" << endl;
+    cout << "enter 2 for add a child" << endl;
+    cout << "enter 3 for find a node" << endl;
+    cout << "enter 4 for check size of family tree" << endl;
+    cout << "enter 5 for delete a node" << endl;
+    cout << "enter 6 for check two nodes are ancestors or not" << endl;
+    cout << "enter 7 for check two nodes are siblings or not" << endl;
+    cout << "enter 8 for check two nodes are distant family or not" << endl;
+    cout << "enter 9 for find a common ancestor" << endl;
+    cout << "enter 10 for find a farthest child" << endl;
+    cout << "enter 11 for find most distant relatives" << endl;
+    cout << "enter -1 for exit" << endl;
 
-    familyTree.addChild("Grandparent", "zahra");
-    familyTree.addChild("Grandparent", "milad");
-    familyTree.addChild("zahra", "Child1");
-    familyTree.addChild("zahra", "yasy");
-    familyTree.addChild("milad", "mina");
-    familyTree.addChild("milad", "mina");
-  // pair<string, string> distantRelatives = familyTree.findMostDistantRelatives();
-    familyTree.Delete("yasy");
-    familyTree.Size();
-    //cout << "Most Distant Relatives: " << distantRelatives.first << " and " << distantRelatives.second << endl;
+   cin >> input; 
+    while(input != -1){
+        if(input == 1){
+            cout <<"name of root" << endl;
+            string name;
+            cin >> name;
+            familyTree.add(name);
+        }
+        else if(input == 2){
+            cout << "name of parent " << endl;
+            string name , name1;
+            cin >> name ;
+            cout << "name of child" << endl;
+            cin >> name1;
+            familyTree.addChild(name , name1);
+        }
+        else if(input == 3){
+            cout << "name " << endl;
+            string name;
+            cin >> name;
+            familyTree.Find(name);
+        }
+        else if(input == 4){
+            familyTree.Size();
+        }
+        else if(input == 5){
+            cout << "name " << endl;
+            string name;
+            cin >> name;
+            familyTree.Delete(name);
+        }
+        else if(input == 6){
+            cout << "name1 and name2 with space" << endl;
+            string name , name1;
+            cin >> name >> name1;
+            if(familyTree.Ancestor(name,name1)){
+                cout << "they are ancestors" << endl;
+            }
+            else{
+                cout << "they aren't ancestors" << endl;
+            }
+        }
+        else if(input == 7){
+            cout << "name1 and name2 with space" << endl;
+            string name , name1;
+            cin >> name >> name1;
+            if(familyTree.sibling(name,name1)){
+                cout << "they are siblings" << endl;
+            }
+            else{
+                cout << "they aren't siblings" << endl;
+            }
+        }
+        else if(input == 8){
+            cout << "name1 and name2 with space" << endl;
+            string name , name1;
+            cin >> name >> name1;
+            if(familyTree.distantfamily(name,name1)){
+                cout << "they are distant family" << endl;
+            }
+            else{
+                cout << "they aren't distant family" << endl;
+            }
+        }
+        else if(input == 9){
+            cout << "name1 and name2 with space" << endl;
+            string name , name1;
+            cin >> name >> name1;
+            familyTree.commonAncestor(name,name1);
+        }
+        else if(input == 10){
+            cout << "name" << endl;
+            string name ;
+            cin >> name ;
+            cout << familyTree.findFarthestChild(name);
+            cout << endl;
+        }
+        else if(input == 11){
+            pair<string, string> distantRelatives = familyTree.findMostDistantRelatives();
+            cout << "Most Distant Relatives: " << distantRelatives.first << " and " << distantRelatives.second << endl;
+        }
+        cin >> input;
+    }
 }
+    
+
+    
+  
 /*
 
-        grand
-    zahra    milad
-Child  yasy    mina
+         Grandparent
+    Ava          Danial
+ Arta  Sara   Olya
 
 
 */
